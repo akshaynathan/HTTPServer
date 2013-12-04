@@ -1,0 +1,16 @@
+The source code for all the servers can be found in HTTPServer/src. Each server is labelled by the type of server it is, for example, SequentialHTTPServer, or SharedSocketWNHTTPServer.
+
+The answers for the questions about xsocket can be found in xsocket answers.
+
+In the graphs directory, are the graphs for the meandelay (SERVERNAME_meandelay.png) and throughput (SERVERNAME_throughput.png). These graphs were made with gnu plot. For the servers with a threadpool, the small thread pool has 5 threads, and the large threadpool has 50. 
+
+In terms of design, every server except the async server follows the designs from the examples in class.
+
+Heartbeat monitoring is implemented through cgi. The server will use the program called load in rootdir to report load stats. This program is responsible for executing the load-checking algorithm and returning the right code. A simple example ruby script is included, this simply checks the ratio of free to total memory.
+
+The async server is pretty much the same, but it is multi-threaded (that is, there are NCPUS worker threads that run the handlers.) A couple key issues this created is that keys had to be "paused" while they were on the queue waiting to be handled (I used interestOps(0) to do this). Also, this created a bunch of synchronization problems, so there are far more locks in this version than in the single-threaded version (this could explain why the throughput between those two aren't
+significantly different, the overhead from locking cancels out the benefit of the threads).
+
+The cache is a map between file path and bytebuffer, elements in the cache have a 30 seconds TTL, after which they are replaced if necessary. This value can be chagned in the CachedMap class.
+
+In terms of file io, my async server uses direct transfer for small files (< 50kb), and mem-mapped files for larger files (this is because memory mapping is expensive and unnecessary for small files). 
